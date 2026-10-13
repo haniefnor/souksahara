@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Souk Sahara - Egyptian Multi-Vendor E-Commerce</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            sahara: {
+              50: '#FAF5EF',
+              100: '#F5EBE1',
+              200: '#E6D2BF',
+              500: '#B87A38',
+              600: '#A1662B',
+              700: '#8A531C',
+              800: '#4A311D',
+              900: '#2A1B0E',
+            },
+            accent: {
+              ochre: '#D97706',
+              gold: '#E5A93C',
+            }
+          },
+          fontFamily: {
+            heading: ['Outfit', 'sans-serif'],
+            body: ['Plus Jakarta Sans', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #f1f5f9;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .font-heading { font-family: 'Outfit', sans-serif; }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .floating-shadow { box-shadow: 0 10px 25px -5px rgba(74, 49, 29, 0.12); }
+    .glass-pill {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(10px);
+    }
+  </style>
+</head>
+<body class="flex justify-center items-center min-h-screen bg-slate-200 p-0 sm:p-4">
+
+  <!-- Mobile Device Wrapper -->
+  <div class="w-full max-w-md h-[100vh] sm:h-[880px] bg-sahara-50 rounded-none sm:rounded-[36px] shadow-2xl overflow-hidden flex flex-col relative border-0 sm:border-[8px] border-sahara-800">
+    
+    <!-- Phone Top Status Bar -->
+    <div class="bg-sahara-800 text-sahara-100 text-xs px-6 pt-3 pb-1 flex justify-between items-center z-50">
+      <span class="font-semibold" id="liveClock">09:41</span>
+      <div class="flex items-center gap-2">
+        <i class="fas me-1 fa-wifi"></i>
+        <i class="fas me-1 fa-battery-full"></i>
+      </div>
+    </div>
+
+    <!-- Push Notification Simulation Banner -->
+    <div id="pushNotification" class="hidden absolute top-10 left-4 right-4 bg-sahara-900/95 text-white p-3 rounded-2xl shadow-2xl z-50 transition-all transform duration-300 border border-accent-gold/30">
+      <div class="flex items-start gap-3">
+        <div class="bg-accent-gold text-sahara-900 p-2 rounded-xl text-xs font-bold">
+          <i class="fas fa-bell"></i>
+        </div>
+        <div class="flex-1">
+          <div class="flex justify-between items-center">
+            <h4 class="font-heading font-bold text-xs text-accent-gold">SOUK SAHARA EGYPT</h4>
+            <span class="text-[10px] text-gray-400">Just now</span>
+          </div>
+          <p id="notifText" class="text-xs text-gray-200 mt-0.5">Your order has been placed successfully!</p>
+        </div>
+        <button onclick="closeNotif()" class="text-gray-400 hover:text-white text-xs"><i class="fas fa-times"></i></button>
+      </div>
+    </div>
+
+    <!-- App Dynamic Header Bar -->
+    <header class="bg-sahara-800 text-white px-4 pt-3 pb-4 rounded-b-2xl shadow-md z-40">
+      <div class="flex justify-between items-center mb-3">
+        <div class="flex items-center gap-2">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-accent-ochre to-accent-gold flex items-center justify-center font-heading font-black text-sahara-900 text-lg shadow-inner">
+            S
+          </div>
+          <div>
+            <h1 class="font-heading text-lg font-extrabold tracking-wide text-sahara-50 leading-none">SOUK SAHARA</h1>
+            <span class="text-[10px] text-accent-gold font-medium"><i class="fas fa-location-dot me-1"></i> Cairo, Egypt</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <button onclick="switchTab('notifTab')" class="relative p-2 bg-sahara-700/60 rounded-full text-sahara-100 hover:bg-sahara-700">
+            <i class="fas fa-bell text-sm"></i>
+            <span id="notifBadge" class="absolute -top-1 -right-1 bg-accent-ochre text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">2</span>
+          </button>
+          <button onclick="switchTab('cartTab')" class="relative p-2 bg-sahara-700/60 rounded-full text-sahara-100 hover:bg-sahara-700">
+            <i class="fas fa-shopping-bag text-sm"></i>
+            <span id="cartBadge" class="absolute -top-1 -right-1 bg-accent-gold text-sahara-900 text-[10px] font-extrabold w-4 h-4 rounded-full flex items-center justify-center">0</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Floating Pill Search Bar -->
+      <div class="relative flex items-center">
+        <input type="text" id="searchInput" onkeyup="filterProducts()" placeholder="Search Egyptian crafts, spices, fashion..." class="w-full bg-sahara-900/40 text-white placeholder-sahara-200/60 text-xs rounded-full py-2.5 pl-9 pr-10 focus:outline-none focus:ring-2 focus:ring-accent-gold border border-sahara-600/40">
+        <i class="fas fa-search absolute left-3.5 text-sahara-200/70 text-xs"></i>
+        <button class="absolute right-2 bg-accent-gold text-sahara-900 p-1.5 rounded-full w-6 h-6 flex items-center justify-center text-[10px] font-bold">
+          <i class="fas fa-sliders"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- MAIN SCROLLABLE CONTENT AREA -->
+    <main id="mainContainer" class="flex-1 overflow-y-auto no-scrollbar p-4 space-y-5 pb-24">
+      
+      <!-- BUYER HOME VIEW -->
+      <div id="homeView" class="space-y-5">
+        
+        <!-- Promo Banner Carousel -->
+        <div class="relative bg-gradient-to-r from-sahara-800 to-sahara-600 rounded-2xl p-4 text-white overflow-hidden shadow-md">
+          <div class="absolute -right-4 -bottom-6 w-28 h-28 bg-accent-gold/20 rounded-full blur-xl"></div>
+          <span class="bg-accent-gold text-sahara-900 font-heading font-extrabold text-[10px] px-2.5 py-0.5 rounded-full uppercase tracking-wider">EGYPT EXCLUSIVE</span>
+          <h2 class="font-heading text-lg font-bold mt-2 leading-tight">Grand Nile Deals<br><span class="text-accent-gold">Up to 60% OFF</span></h2>
+          <p class="text-[11px] text-sahara-100/80 mt-1">Free delivery across Cairo & Alexandria</p>
+          <button class="mt-3 bg-sahara-50 text-sahara-800 font-heading font-bold text-xs px-4 py-1.5 rounded-xl shadow-sm hover:bg-white">Shop Now</button>
+        </div>
+
+        <!-- Floating Category Icons -->
+        <div>
+          <div class="flex justify-between items-center mb-2">
+            <h3 class="font-heading font-bold text-sahara-800 text-sm">Categories</h3>
+            <span class="text-[11px] text-accent-ochre font-semibold cursor-pointer">See All</span>
+          </div>
+          <div class="flex gap-3 overflow-x-auto no-scrollbar py-1">
+            <button onclick="filterCategory('All')" class="flex flex-col items-center min-w-[62px]">
+              <div class="w-12 h-12 rounded-2xl bg-sahara-800 text-accent-gold flex items-center justify-center text-base shadow-sm">
+                <i class="fas fa-border-all"></i>
+              </div>
+              <span class="text-[10px] font-medium text-sahara-800 mt-1">All</span>
+            </button>
+            <button onclick="filterCategory('Fashion')" class="flex flex-col items-center min-w-[62px]">
+              <div class="w-12 h-12 rounded-2xl bg-white text-sahara-700 flex items-center justify-center text-base shadow-sm border border-sahara-100">
+                <i class="fas fa-vest"></i>
+              </div>
+              <span class="text-[10px] font-medium text-sahara-800 mt-1">Fashion</span>
+            </button>
+            <button onclick="filterCategory('Groceries')" class="flex flex-col items-center min-w-[62px]">
+              <div class="w-12 h-12 rounded-2xl bg-white text-sahara-700 flex items-center justify-center text-base shadow-sm border border-sahara-100">
+                <i class="fas fa-pepper-hot"></i>
+              </div>
+              <span class="text-[10px] font-medium text-sahara-800 mt-1">Groceries</span>
+            </button>
+            <button onclick="filterCategory('Electronics')" class="flex flex-col items-center min-w-[62px]">
+              <div class="w-12 h-12 rounded-2xl bg-white text-sahara-700 flex items-center justify-center text-base shadow-sm border border-sahara-100">
+                <i class="fas fa-mobile-screen"></i>
+              </div>
+              <span class="text-[10px] font-medium text-sahara-800 mt-1">Tech</span>
+            </button>
+            <button onclick="filterCategory('Perfumes')" class="flex flex-col items-center min-w-[62px]">
+              <div class="w-12 h-12 rounded-2xl bg-white text-sahara-700 flex items-center justify-center text-base shadow-sm border border-sahara-100">
+                <i class="fas fa-spray-can-sparkles"></i>
+              </div>
+              <span class="text-[10px] font-medium text-sahara-800 mt-1">Perfumes</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Flash Sale Banner & Cards -->
+        <div class="bg-gradient-to-r from-sahara-100 via-sahara-50 to-sahara-100 p-3 rounded-2xl border border-sahara-200/60">
+          <div class="flex justify-between items-center mb-3">
+            <div class="flex items-center gap-2">
+              <span class="bg-accent-ochre text-white text-xs font-heading font-black px-2 py-0.5 rounded-lg flex items-center gap-1">
+                <i class="fas fa-bolt text-[10px]"></i> FLASH SALE
+              </span>
+              <div class="flex items-center gap-1 text-[11px] font-mono font-bold text-sahara-800">
+                <span class="bg-sahara-800 text-white px-1.5 py-0.5 rounded">02</span>:
+                <span class="bg-sahara-800 text-white px-1.5 py-0.5 rounded">45</span>:
+                <span class="bg-sahara-800 text-white px-1.5 py-0.5 rounded">18</span>
+              </div>
+            </div>
+            <span class="text-[11px] text-accent-ochre font-bold">View More</span>
+          </div>
+
+          <!-- Flash Sale Horizontal Scroll -->
+          <div id="flashSaleGrid" class="flex gap-3 overflow-x-auto no-scrollbar py-1">
+            <!-- Dynamic Flash Sale Items injected via JS -->
+          </div>
+        </div>
+
+        <!-- Product Grid Title -->
+        <div class="flex justify-between items-center">
+          <h3 class="font-heading font-bold text-sahara-800 text-base">Recommended For You</h3>
+          <span class="text-[11px] text-sahara-600 font-medium">Filter by Price</span>
+        </div>
+
+        <!-- Main Product Grid -->
+        <div id="productGrid" class="grid grid-cols-2 gap-3">
+          <!-- Dynamic Products injected via JS -->
+        </div>
+      </div>
+
+      <!-- PRODUCT DETAIL MODAL/VIEW -->
+      <div id="productDetailView" class="hidden space-y-4">
+        <button onclick="backToHome()" class="text-sahara-800 font-semibold text-xs flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl shadow-sm border border-sahara-100">
+          <i class="fas fa-arrow-left"></i> Back to Products
+        </button>
+        <div id="detailContent">
+          <!-- Injected via JS -->
+        </div>
+      </div>
+
+      <!-- SHOPPING CART VIEW -->
+      <div id="cartView" class="hidden space-y-4">
+        <h2 class="font-heading font-bold text-lg text-sahara-800">My Shopping Cart</h2>
+        <div id="cartItemsList" class="space-y-3">
+          <!-- Cart items injected via JS -->
+        </div>
+        <div id="cartSummary" class="bg-white p-4 rounded-2xl border border-sahara-100 shadow-sm space-y-3">
+          <div class="flex justify-between text-xs text-gray-600">
+            <span>Subtotal</span>
+            <span id="subtotalPrice" class="font-semibold text-sahara-800">0 EGP</span>
+          </div>
+          <div class="flex justify-between text-xs text-gray-600">
+            <span>Shipping (Cairo Region)</span>
+            <span class="font-semibold text-sahara-800">35 EGP</span>
+          </div>
+          <div class="border-t border-dashed border-gray-200 pt-2 flex justify-between font-heading font-bold text-base text-sahara-800">
+            <span>Total</span>
+            <span id="totalPrice" class="text-accent-ochre">0 EGP</span>
+          </div>
+          <button onclick="openCheckout()" class="w-full bg-sahara-800 text-white font-heading font-bold py-3 rounded-xl shadow-md hover:bg-sahara-700">
+            Proceed to Checkout
+          </button>
+        </div>
+      </div>
+
+      <!-- CHECKOUT VIEW -->
+      <div id="checkoutView" class="hidden space-y-4">
+        <button onclick="switchTab('cartTab')" class="text-sahara-800 text-xs font-semibold flex items-center gap-2">
+          <i class="fas fa-arrow-left"></i> Back to Cart
+        </button>
+        <h2 class="font-heading font-bold text-lg text-sahara-800">Egyptian Payment & Order</h2>
+        
+        <div class="bg-white p-4 rounded-2xl border border-sahara-100 space-y-3">
+          <h3 class="font-heading font-bold text-xs text-sahara-800 uppercase tracking-wider">Select Payment Method</h3>
+          
+          <label class="flex items-center gap-3 p-3 rounded-xl border border-sahara-200 bg-sahara-50/50 cursor-pointer">
+            <input type="radio" name="paymentMethod" value="COD" checked class="accent-sahara-800">
+            <div>
+              <span class="font-heading font-bold text-xs text-sahara-800 block">Cash on Delivery (COD)</span>
+              <span class="text-[10px] text-gray-500">Pay cash upon delivery in Egypt</span>
+            </div>
+          </label>
+
+          <label class="flex items-center gap-3 p-3 rounded-xl border border-sahara-200 bg-sahara-50/50 cursor-pointer">
+            <input type="radio" name="paymentMethod" value="Vodafone Cash" class="accent-sahara-800">
+            <div>
+              <span class="font-heading font-bold text-xs text-sahara-800 block">Vodafone Cash Wallet</span>
+              <span class="text-[10px] text-gray-500">Instant transfer to vendor wallet</span>
+            </div>
+          </label>
+
+          <label class="flex items-center gap-3 p-3 rounded-xl border border-sahara-200 bg-sahara-50/50 cursor-pointer">
+            <input type="radio" name="paymentMethod" value="InstaPay" class="accent-sahara-800">
+            <div>
+              <span class="font-heading font-bold text-xs text-sahara-800 block">InstaPay Egypt</span>
+              <span class="text-[10px] text-gray-500">Instant bank transfer via InstaPay ID</span>
+            </div>
+          </label>
+        </div>
+
+        <button onclick="confirmOrder()" class="w-full bg-accent-ochre text-white font-heading font-bold py-3 rounded-xl shadow-md">
+          Confirm & Place Order
+        </button>
+        
+        <button onclick="orderViaWhatsApp()" class="w-full bg-emerald-600 text-white font-heading font-bold py-3 rounded-xl shadow-md flex items-center justify-center gap-2">
+          <i class="fab fa-whatsapp text-lg"></i> Direct Order via WhatsApp
+        </button>
+      </div>
+
+      <!-- NOTIFICATIONS & ORDERS VIEW -->
+      <div id="notifTab" class="hidden space-y-4">
+        <h2 class="font-heading font-bold text-lg text-sahara-800">Notifications & Orders</h2>
+        <div id="ordersList" class="space-y-3">
+          <!-- Dynamic order items -->
+        </div>
+      </div>
+
+      <!-- VENDOR / SELLER DASHBOARD VIEW -->
+      <div id="sellerView" class="hidden space-y-4">
+        <div class="bg-sahara-800 text-white p-4 rounded-2xl flex justify-between items-center shadow-md">
+          <div>
+            <span class="text-[10px] bg-accent-gold text-sahara-900 font-bold px-2 py-0.5 rounded-full">VERIFIED VENDOR</span>
+            <h2 class="font-heading font-bold text-base mt-1">El-Khan Vendor Hub</h2>
+            <p class="text-[10px] text-sahara-200">Manage products, stock & sales</p>
+          </div>
+          <button onclick="openAddProductModal()" class="bg-accent-gold text-sahara-900 font-heading font-bold text-xs px-3 py-2 rounded-xl">
+            + Add Product
+          </button>
+        </div>
+
+        <!-- Vendor Stats -->
+        <div class="grid grid-cols-2 gap-3">
+          <div class="bg-white p-3 rounded-2xl border border-sahara-100">
+            <span class="text-[10px] text-gray-500 block">Total Revenue</span>
+            <span class="font-heading font-bold text-base text-sahara-800">14,850 EGP</span>
+          </div>
+          <div class="bg-white p-3 rounded-2xl border border-sahara-100">
+            <span class="text-[10px] text-gray-500 block">Active Products</span>
+            <span class="font-heading font-bold text-base text-accent-ochre" id="vendorProductCount">4</span>
+          </div>
+        </div>
+
+        <h3 class="font-heading font-bold text-sm text-sahara-800">My Vendor Products</h3>
+        <div id="vendorProductsList" class="space-y-2">
+          <!-- Vendor product list -->
+        </div>
+      </div>
+
+    </main>
+
+    <!-- CURVED BOTTOM NAVIGATION BAR -->
+    <nav class="absolute bottom-0 left-0 right-0 bg-white border-t border-sahara-100 px-4 py-2 flex justify-between items-center z-40 rounded-t-2xl shadow-lg">
+      <button onclick="switchTab('homeView')" id="navHome" class="flex flex-col items-center text-sahara-800">
+        <i class="fas fa-store text-base"></i>
+        <span class="text-[10px] font-bold mt-0.5">Shop</span>
+      </button>
+      <button onclick="switchTab('cartTab')" id="navCart" class="flex flex-col items-center text-gray-400 hover:text-sahara-800">
+        <i class="fas fa-shopping-cart text-base"></i>
+        <span class="text-[10px] font-medium mt-0.5">Cart</span>
+      </button>
+
+      <!-- Center Floating Button for Seller Mode Switch -->
+      <button onclick="switchTab('sellerView')" id="navSeller" class="flex flex-col items-center -mt-6">
+        <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-sahara-800 to-sahara-600 text-accent-gold flex items-center justify-center text-lg shadow-xl border-4 border-sahara-50">
+          <i class="fas fa-store-slash"></i>
+        </div>
+        <span class="text-[10px] font-bold text-sahara-800 mt-0.5">Vendor</span>
+      </button>
+
+      <button onclick="switchTab('notifTab')" id="navNotif" class="flex flex-col items-center text-gray-400 hover:text-sahara-800">
+        <i class="fas fa-clock-rotate-left text-base"></i>
+        <span class="text-[10px] font-medium mt-0.5">Orders</span>
+      </button>
+      <button onclick="alert('Profile Settings coming soon!')" class="flex flex-col items-center text-gray-400 hover:text-sahara-800">
+        <i class="fas fa-user text-base"></i>
+        <span class="text-[10px] font-medium mt-0.5">Account</span>
+      </button>
+    </nav>
+
+  </div>
+
+  <script>
+    // Sample Products Data
+    let products = [
+      {
+        id: 1,
+        name: "Egyptian Cotton Abaya - Gold Trim",
+        price: 850,
+        originalPrice: 1200,
+        category: "Fashion",
+        stock: 12,
+        rating: 4.9,
+        vendor: "Khan El-Khalili Crafts",
+        image: "https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?auto=format&fit=crop&w=400&q=80",
+        flash: true
+      },
+      {
+        id: 2,
+        name: "Authentic Egyptian Spices Set",
+        price: 240,
+        originalPrice: 350,
+        category: "Groceries",
+        stock: 25,
+        rating: 4.8,
+        vendor: "Cairo Bazaar Spices",
+        image: "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?auto=format&fit=crop&w=400&q=80",
+        flash: true
+      },
+      {
+        id: 3,
+        name: "Royal Oud & Amber Perfume",
+        price: 1100,
+        originalPrice: 1500,
+        category: "Perfumes",
+        stock: 5,
+        rating: 5.0,
+        vendor: "Pharaoh Scents",
+        image: "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=400&q=80",
+        flash: false
+      },
+      {
+        id: 4,
+        name: "Handmade Papyrus Wall Art",
+        price: 450,
+        originalPrice: 600,
+        category: "Crafts",
+        stock: 8,
+        rating: 4.7,
+        vendor: "Nile Papyrus Shop",
+        image: "https://images.unsplash.com/photo-1579783902614-a3fb3927b675?auto=format&fit=crop&w=400&q=80",
+        flash: false
+      }
+    ];
+
+    let cart = [];
+    let orders = [
+      { id: "ORD-9821", date: "Today, 08:30 AM", status: "Shipped", itemsCount: 2, total: "1,090 EGP" }
+    ];
+
+    // Initialize App
+    function init() {
+      renderProducts(products);
+      renderFlashSale();
+      renderVendorProducts();
+      renderOrders();
+      updateClock();
+      setInterval(updateClock, 30000);
+    }
+
+    // Live Clock
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('liveClock').innerText = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    // Render Main Products
+    function renderProducts(items) {
+      const container = document.getElementById('productGrid');
+      container.innerHTML = items.map(p => `
+        <div class="bg-white rounded-2xl p-2.5 border border-sahara-100 shadow-sm relative flex flex-col justify-between">
+          <div>
+            <div class="relative rounded-xl overflow-hidden mb-2 h-32 bg-sahara-50">
+              <img src="${p.image}" class="w-full h-full object-cover">
+              <span class="absolute top-1.5 left-1.5 bg-sahara-800/90 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">
+                ${p.category}
+              </span>
+            </div>
+            <span class="text-[10px] text-gray-400 block truncate">${p.vendor}</span>
+            <h4 class="font-heading font-bold text-xs text-sahara-800 line-clamp-2 mt-0.5">${p.name}</h4>
+          </div>
+          <div class="mt-2 flex items-center justify-between">
+            <div>
+              <span class="font-heading font-extrabold text-sm text-sahara-800 block">${p.price} EGP</span>
+              ${p.originalPrice ? `<span class="text-[10px] text-gray-400 line-through">${p.originalPrice} EGP</span>` : ''}
+            </div>
+            <button onclick="addToCart(${p.id})" class="w-8 h-8 rounded-full bg-accent-gold text-sahara-900 flex items-center justify-center font-bold shadow-sm hover:bg-accent-ochre hover:text-white transition-colors">
+              <i class="fas fa-plus text-xs"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Render Flash Sale
+    function renderFlashSale() {
+      const flashItems = products.filter(p => p.flash);
+      const container = document.getElementById('flashSaleGrid');
+      container.innerHTML = flashItems.map(p => `
+        <div class="min-w-[130px] bg-white rounded-xl p-2 border border-sahara-100 flex-shrink-0">
+          <img src="${p.image}" class="w-full h-20 object-cover rounded-lg mb-1.5">
+          <h5 class="text-[11px] font-bold text-sahara-800 truncate">${p.name}</h5>
+          <span class="text-xs font-extrabold text-accent-ochre block">${p.price} EGP</span>
+          <div class="w-full bg-gray-100 rounded-full h-1.5 mt-1 overflow-hidden">
+            <div class="bg-accent-ochre h-full rounded-full" style="width: 70%"></div>
+          </div>
+          <span class="text-[9px] text-gray-400 mt-0.5 block">Only ${p.stock} left</span>
+        </div>
+      `).join('');
+    }
+
+    // Add to Cart Logic
+    function addToCart(productId) {
+      const product = products.find(p => p.id === productId);
+      const existing = cart.find(item => item.id === productId);
+      if (existing) {
+        existing.qty += 1;
+      } else {
+        cart.push({ ...product, qty: 1 });
+      }
+      updateCartUI();
+      triggerPushNotif(`Added "${product.name}" to cart!`);
+    }
+
+    // Update Cart UI
+    function updateCartUI() {
+      const badge = document.getElementById('cartBadge');
+      const totalQty = cart.reduce((acc, i) => acc + i.qty, 0);
+      badge.innerText = totalQty;
+
+      const container = document.getElementById('cartItemsList');
+      if (cart.length === 0) {
+        container.innerHTML = `<p class="text-center text-xs text-gray-400 py-6">Your cart is empty.</p>`;
+      } else {
+        container.innerHTML = cart.map(item => `
+          <div class="bg-white p-3 rounded-2xl border border-sahara-100 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <img src="${item.image}" class="w-12 h-12 object-cover rounded-xl">
+              <div>
+                <h4 class="font-heading font-bold text-xs text-sahara-800">${item.name}</h4>
+                <span class="text-xs text-accent-ochre font-bold">${item.price} EGP</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 bg-sahara-50 px-2 py-1 rounded-xl">
+              <button onclick="changeQty(${item.id}, -1)" class="text-xs font-bold text-sahara-800">-</button>
+              <span class="text-xs font-bold px-1">${item.qty}</span>
+              <button onclick="changeQty(${item.id}, 1)" class="text-xs font-bold text-sahara-800">+</button>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      const subtotal = cart.reduce((acc, i) => acc + (i.price * i.qty), 0);
+      document.getElementById('subtotalPrice').innerText = `${subtotal} EGP`;
+      document.getElementById('totalPrice').innerText = `${subtotal > 0 ? subtotal + 35 : 0} EGP`;
+    }
+
+    function changeQty(id, delta) {
+      const item = cart.find(i => i.id === id);
+      if (item) {
+        item.qty += delta;
+        if (item.qty <= 0) {
+          cart = cart.filter(i => i.id !== id);
+        }
+      }
+      updateCartUI();
+    }
+
+    // Navigation Switcher
+    function switchTab(tabId) {
+      ['homeView', 'productDetailView', 'cartView', 'checkoutView', 'notifTab', 'sellerView'].forEach(id => {
+        document.getElementById(id).classList.add('hidden');
+      });
+      document.getElementById(tabId).classList.remove('hidden');
+      if(tabId === 'cartView') updateCartUI();
+    }
+
+    function backToHome() {
+      switchTab('homeView');
+    }
+
+    function openCheckout() {
+      if (cart.length === 0) return alert('Your cart is empty!');
+      switchTab('checkoutView');
+    }
+
+    function confirmOrder() {
+      orders.unshift({
+        id: "ORD-" + Math.floor(1000 + Math.random() * 9000),
+        date: "Just Now",
+        status: "Processing",
+        itemsCount: cart.length,
+        total: document.getElementById('totalPrice').innerText
+      });
+      cart = [];
+      updateCartUI();
+      renderOrders();
+      switchTab('notifTab');
+      triggerPushNotif("Order placed! Status: Processing (Cairo Delivery)");
+    }
+
+    function orderViaWhatsApp() {
+      const text = encodeURIComponent("Hello Souk Sahara vendor! I would like to order items from my cart.");
+      window.open(`https://wa.me/201000000000?text=${text}`, '_blank');
+    }
+
+    function renderOrders() {
+      const container = document.getElementById('ordersList');
+      container.innerHTML = orders.map(o => `
+        <div class="bg-white p-3 rounded-2xl border border-sahara-100 shadow-sm">
+          <div class="flex justify-between items-center border-b border-gray-100 pb-2 mb-2">
+            <span class="font-heading font-bold text-xs text-sahara-800">${o.id}</span>
+            <span class="text-[10px] bg-sahara-100 text-sahara-800 font-bold px-2 py-0.5 rounded-full">${o.status}</span>
+          </div>
+          <div class="flex justify-between text-xs text-gray-500">
+            <span>${o.itemsCount} Items • ${o.date}</span>
+            <span class="font-bold text-sahara-800">${o.total}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderVendorProducts() {
+      const container = document.getElementById('vendorProductsList');
+      container.innerHTML = products.map(p => `
+        <div class="bg-white p-2.5 rounded-xl border border-sahara-100 flex justify-between items-center text-xs">
+          <div class="flex items-center gap-2">
+            <img src="${p.image}" class="w-8 h-8 rounded-lg object-cover">
+            <div>
+              <span class="font-bold text-sahara-800 block">${p.name}</span>
+              <span class="text-[10px] text-gray-400">Stock: ${p.stock}</span>
+            </div>
+          </div>
+          <span class="font-bold text-accent-ochre">${p.price} EGP</span>
+        </div>
+      `).join('');
+      document.getElementById('vendorProductCount').innerText = products.length;
+    }
+
+    function triggerPushNotif(msg) {
+      document.getElementById('notifText').innerText = msg;
+      const banner = document.getElementById('pushNotification');
+      banner.classList.remove('hidden');
+      setTimeout(() => banner.classList.add('hidden'), 4000);
+    }
+
+    function closeNotif() {
+      document.getElementById('pushNotification').classList.add('hidden');
+    }
+
+    function filterCategory(cat) {
+      if(cat === 'All') renderProducts(products);
+      else renderProducts(products.filter(p => p.category === cat));
+    }
+
+    function filterProducts() {
+      const q = document.getElementById('searchInput').value.toLowerCase();
+      renderProducts(products.filter(p => p.name.toLowerCase().includes(q) || p.category.toLowerCase().includes(q)));
+    }
+
+    window.onload = init;
+  </script>
+</body>
+</html>
